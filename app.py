@@ -3,8 +3,9 @@ from langchain_groq import ChatGroq
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.tools import WikipediaQueryRun
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
-from langchain_core.tools import Tool
+from langchain_core.tools import StructuredTool
 from langgraph.prebuilt import create_react_agent
+from pydantic import BaseModel, Field
 from ddgs import DDGS
 import os
 from dotenv import load_dotenv
@@ -21,7 +22,11 @@ api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200)
 wiki = WikipediaQueryRun(api_wrapper=api_wrapper)
 
 
-# --- Robust DuckDuckGo Search with region retry ---
+# --- Robust DuckDuckGo Search with explicit input schema ---
+class SearchInput(BaseModel):
+    query: str = Field(description="The search query string to look up on the web")
+
+
 def robust_ddg_search(query: str) -> str:
     regions = ["us-en", "uk-en", "de-de", "wt-wt"]
     for region in regions:
@@ -41,12 +46,13 @@ def robust_ddg_search(query: str) -> str:
     return "No results found after retrying with multiple regions."
 
 
-search = Tool(
-    name="Search",
+search = StructuredTool.from_function(
     func=robust_ddg_search,
-    description="Useful for searching the web for current information. Input should be a search query string."
+    name="Search",
+    description="Useful for searching the web for current information. Input should be a search query string.",
+    args_schema=SearchInput,
 )
-# ---------------------------------------------------
+# -----------------------------------------------------------
 
 st.title("🔎 Chat with search")
 
@@ -88,7 +94,8 @@ if prompt := st.chat_input(placeholder="What is machine learning?"):
         model=llm,
         tools=tools,
         prompt="You are a helpful assistant that can search the web and Wikipedia. "
-               "Use the Search tool for current information and the Wikipedia tool for encyclopedic facts."
+               "Use the Search tool for current information and the Wikipedia tool for encyclopedic facts. "
+               "When calling a tool, always provide the parameter named exactly 'query'."
     )
 
     # Invoke the agent and display response
