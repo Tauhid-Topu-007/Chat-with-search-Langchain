@@ -267,7 +267,7 @@ Wikipedia requests depend on an external service. Temporary network issues or ra
 
 - GitHub: [@Tauhid-Topu-007](https://github.com/Tauhid-Topu-007)
 - LinkedIn: [Tauhidul Islam Topu](https://www.linkedin.com/in/tauhidul-islam-topu-1a04b31ab/)
-- Portfolio: [tauhid-topu.netlify.app](https://tauhid-topu.netlify.app/)
+- Portfolio: [tauhid-topu](https://portfolio-frontend-rust-six.vercel.app/)
 
 ## 📄 License
 
